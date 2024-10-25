@@ -7,7 +7,6 @@ from gl import Renderer
 from model import Model
 from shaders import *
 
-
 width = 1000
 height = 1000
 
@@ -17,12 +16,6 @@ screen = pygame.display.set_mode((width, height), pygame.SCALED | pygame.OPENGL 
 clock = pygame.time.Clock()
 
 rend = Renderer(screen)
-rend.SetShaders(vertex_shader, fragment_shader)
-
-            # Position          # Color
-# triangle = [-0.5, -0.5, 0,      1,0,0,
-#                0,  0.5, 0,      0,1,0,
-#              0.5, -0.5, 0,      0,0,1]
 
 # rend.scene.append(Buffer(triangle))
 
@@ -35,6 +28,10 @@ faceModel.scale.y = 2
 faceModel.scale.z = 2
 
 rend.scene.append(faceModel)
+
+vShader = vertex_shader
+fShader = fragment_shader
+rend.SetShaders(vShader, fShader)
 
 isRunning = True
 while isRunning:
@@ -54,18 +51,38 @@ while isRunning:
             elif event.key == pygame.K_2:
                 rend.WireframeMode()
             elif event.key == pygame.K_3:
-                rend.SetShaders(vertex_shader, fragment_shader)
+                vShader = vertex_shader
+                rend.SetShaders(vShader, fShader)
             elif event.key == pygame.K_4:
-                rend.SetShaders(fat_shader, fragment_shader)
+                vShader = fat_shader
+                rend.SetShaders(vShader, fShader)
             elif event.key == pygame.K_5:
-                rend.SetShaders(water_shader, fragment_shader)
-    
-    
-    if keys[K_LEFT]:
-        faceModel.rotation.y -= 10 * deltaTime
+                vShader = water_shader
+                rend.SetShaders(vShader, fShader)
+            elif event.key == pygame.K_6:
+                fShader = fragment_shader
+                rend.SetShaders(vShader, fShader)
+            elif event.key == pygame.K_6:
+                fShader = negative_shader
+                rend.SetShaders(vShader, fShader)
 
     if keys[K_LEFT]:
-        faceModel.rotation.y += 10 * deltaTime
+        rend.pointLigth.x -= 1 * deltaTime
+
+    if keys[K_RIGHT]:
+        rend.pointLigth.x += 1 * deltaTime
+
+    if keys[K_UP]:
+        rend.pointLigth.z += 1 * deltaTime
+
+    if keys[K_DOWN]:
+        rend.pointLigth.z -= 1 * deltaTime
+    
+    if keys[K_PAGEUP]:
+        rend.pointLigth.y -= 1 * deltaTime
+
+    if keys[K_PAGEDOWN]:
+        rend.pointLigth.y += 1 * deltaTime
     
     if keys[K_a]:
         rend.camera.position.x -= 1 * deltaTime
@@ -81,7 +98,6 @@ while isRunning:
     
     rend.time += deltaTime
     rend.camera.LookAt(faceModel.translation)
-
 
     rend.Render()
     pygame.display.flip()

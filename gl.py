@@ -16,6 +16,8 @@ class Renderer(object):
         self.time = 0
         self.value = 0
 
+        self.pointLigth = glm.vec3(0, 0, 0)
+
         self.scene = []
         self.active_shaders = None
         self.camera = Camera(self.width, self.height)
@@ -46,6 +48,7 @@ class Renderer(object):
                                    1, GL_FALSE, glm.value_ptr(self.camera.GetViewMatrix()))
             glUniformMatrix4fv(glGetUniformLocation(self.active_shaders, "viewProjectionMatrix"),
                                    1, GL_FALSE, glm.value_ptr(self.camera.GetViewMatrix()))
+            glUniform3fv(glGetUniformLocation(self.active_shaders, "pointLight"), 1, glm.value_ptr(self.pointLigth))
 
 
         for obj in self.scene:
