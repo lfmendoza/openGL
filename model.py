@@ -22,8 +22,6 @@ class Model(object):
         self.scale = glm.vec3(1,1,1)
     
     def GetModelMatrix(self):
-        # M = T * R * S
-        # R = pitch * yaw * roll
         identity = glm.mat4x4(1)
         translateMat = glm.translate(identity, self.translation)
         pitchMat = glm.rotate(identity, glm.radians(self.rotation.x), glm.vec3(1,0,0))
@@ -52,7 +50,7 @@ class Model(object):
                 for value in vts:
                     vert.append(value)
                 
-                normals = self.texCoords[face[i][2] - 1]
+                normals = self.normals[face[i][2] - 1]
                 for value in normals:
                     vert.append(value)
                 
@@ -80,14 +78,14 @@ class Model(object):
 
             glActiveTexture(GL_TEXTURE0)
             glBindTexture(GL_TEXTURE_2D, self.texture)
-            glTexImage2D(GL_TEXTURE_2D,                         # Texture Types
-                        0,                                      # Positions
-                        GL_RGB,                                 # Format
-                        self.textureSurface.get_width(),        # Width
-                        self.textureSurface.get_height(),       # Height
-                        0,                                      # Border
-                        GL_RGB,                                 # Format
-                        GL_UNSIGNED_BYTE,                       # Type
-                        self.textureData)                       # Data
+            glTexImage2D(GL_TEXTURE_2D,
+                        0,
+                        GL_RGB,
+                        self.textureSurface.get_width(),
+                        self.textureSurface.get_height(),
+                        0,
+                        GL_RGB,
+                        GL_UNSIGNED_BYTE,
+                        self.textureData)
 
         self.buffer.Render()
