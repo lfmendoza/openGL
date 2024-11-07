@@ -1,3 +1,4 @@
+import glm
 import pygame
 from pygame.locals import *
 import warnings
@@ -7,8 +8,8 @@ from gl import Renderer
 from model import Model
 from shaders import *
 
-width = 800
-height = 600
+width = 1440
+height = 1024
 
 pygame.init()
 
@@ -16,24 +17,24 @@ screen = pygame.display.set_mode((width, height), pygame.OPENGL | pygame.DOUBLEB
 clock = pygame.time.Clock()
 
 rend = Renderer(screen)
-
-skyboxTexture = ["textures/skybox/right.jpg", 
-                 "textures/skybox/left.jpg", 
-                 "textures/skybox/top.jpg", 
-                 "textures/skybox/bottom.jpg", 
-                 "textures/skybox/front.jpg", 
-                 "textures/skybox/back.jpg"]
+skyboxTexture = [
+    "textures/skybox2/skyrender0001.bmp",
+    "textures/skybox2/skyrender0003.bmp",
+    "textures/skybox2/skyrender0005.bmp",
+    "textures/skybox2/skyrender0006.bmp",
+    "textures/skybox2/skyrender0004.bmp",
+    "textures/skybox2/skyrender0002.bmp"
+]
 
 rend.createSkybox(skyboxTexture, skybox_vertex_shader, skybox_fragment_shader)
 
-faceModel = Model("models/model.obj")
-faceModel.AddTexture("textures/model.bmp")
-faceModel.translation.z = -5
-faceModel.scale.x = 2
-faceModel.scale.y = 2
-faceModel.scale.z = 2
+# Cargar un modelo OBJ diferente
+model = Model("models/cat.obj")
+model.AddTexture("textures/cat.bmp")
+model.translation.z = 0
+model.scale = glm.vec3(1, 1, 1)
 
-rend.scene.append(faceModel)
+rend.scene.append(model)
 
 vertex_shaders = [vertex_shader_default, vertex_shader_wave, vertex_shader_twist]
 fragment_shaders = [fragment_shader_default, fragment_shader_grayscale, fragment_shader_inversion]
@@ -41,8 +42,15 @@ fragment_shaders = [fragment_shader_default, fragment_shader_grayscale, fragment
 current_vertex_shader = vertex_shaders[0]
 current_fragment_shader = fragment_shaders[0]
 
-camDistance = 5
-camAngle = 0
+# Variables para los movimientos de cámara
+cam_distance = 5
+cam_angle = 0
+cam_height = 0
+
+max_cam_height = 5
+min_cam_height = -5
+max_cam_distance = 15
+min_cam_distance = 2
 
 rend.SetShaders(current_vertex_shader, current_fragment_shader)
 
@@ -82,57 +90,36 @@ while isRunning:
             elif event.key == pygame.K_8:
                 rend.WireframeMode()
 
+    # Movimiento circular alrededor del modelo
     if keys[K_LEFT]:
-        rend.pointLight.x -= 5 * deltaTime
-
+        cam_angle -= 50 * deltaTime
     if keys[K_RIGHT]:
-        rend.pointLight.x += 5 * deltaTime
+        cam_angle += 50 * deltaTime
 
+    # Movimiento de cámara hacia arriba y abajo con límite
     if keys[K_UP]:
-        rend.pointLight.z += 5 * deltaTime
-
+        cam_height += 5 * deltaTime
+        cam_height = min(cam_height, max_cam_height)
     if keys[K_DOWN]:
-        rend.pointLight.z -= 5 * deltaTime
+        cam_height -= 5 * deltaTime
+        cam_height = max(cam_height, min_cam_height)
 
-    if keys[K_PAGEUP]:
-        rend.pointLight.y += 5 * deltaTime
-
-    if keys[K_PAGEDOWN]:
-        rend.pointLight.y -= 5 * deltaTime
-
+    # Zoom In y Zoom Out con límite
     if keys[K_q]:
-        camDistance += 45 * deltaTime
-
+        cam_distance -= 5 * deltaTime
+        cam_distance = max(cam_distance, min_cam_distance)
     if keys[K_e]:
-        camDistance -= 45 * deltaTime
+        cam_distance += 5 * deltaTime
+        cam_distance = min(cam_distance, max_cam_distance)
 
+    # Actualizar posición de la cámara
+    rend.camera.position = glm.vec3(
+        model.translation.x + glm.sin(glm.radians(cam_angle)) * cam_distance,
+        model.translation.y + cam_height,
+        model.translation.z + glm.cos(glm.radians(cam_angle)) * cam_distance
+    )
 
-    mouseButtons = pygame.mouse.get_pressed()
-    if mouseButtons[0]:
-        camAngle += pygame.mouse.get_rel()[0] * deltaTime * 5
-
-
-    if keys[K_r]:
-        camDistance += 2 * deltaTime
-
-    if keys[K_t]:
-        camDistance -= 2 * deltaTime
-
-    if keys[K_a]:
-        rend.camera.position.x -= 5 * deltaTime
-
-    if keys[K_d]:
-        rend.camera.position.x += 5 * deltaTime
-
-    if keys[K_w]:
-        rend.camera.position.z -= 5 * deltaTime
-
-    if keys[K_s]:
-        rend.camera.position.z += 5 * deltaTime
-
-
-    rend.camera.LookAt(faceModel.translation)
-    rend.camera.Orbit(faceModel.translation, camDistance, camAngle)
+    rend.camera.LookAt(model.translation)
 
     rend.Render()
     rend.time += deltaTime

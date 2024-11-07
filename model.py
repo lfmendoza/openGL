@@ -3,6 +3,7 @@ from buffer import Buffer
 from pygame import image
 from OpenGL.GL import *
 import glm
+from array import array
 
 class Model(object):
     def __init__(self, filename):
@@ -17,22 +18,22 @@ class Model(object):
 
         self.buffer = Buffer(self.BuildBuffer())
 
-        self.translation = glm.vec3(0,0,0)
-        self.rotation = glm.vec3(0,0,0)
-        self.scale = glm.vec3(1,1,1)
-    
+        self.translation = glm.vec3(0, 0, 0)
+        self.rotation = glm.vec3(0, 0, 0)
+        self.scale = glm.vec3(1, 1, 1)
+
     def GetModelMatrix(self):
-        identity = glm.mat4x4(1)
+        identity = glm.mat4(1)
         translateMat = glm.translate(identity, self.translation)
-        pitchMat = glm.rotate(identity, glm.radians(self.rotation.x), glm.vec3(1,0,0))
-        yawMat = glm.rotate(identity, glm.radians(self.rotation.y), glm.vec3(0,1,0))
-        rollMat = glm.rotate(identity, glm.radians(self.rotation.z), glm.vec3(0,0,1))
+        pitchMat = glm.rotate(identity, glm.radians(self.rotation.x), glm.vec3(1, 0, 0))
+        yawMat = glm.rotate(identity, glm.radians(self.rotation.y), glm.vec3(0, 1, 0))
+        rollMat = glm.rotate(identity, glm.radians(self.rotation.z), glm.vec3(0, 0, 1))
 
         rotationMat = pitchMat * yawMat * rollMat
         scaleMat = glm.scale(identity, self.scale)
 
         return translateMat * rotationMat * scaleMat
-    
+
     def BuildBuffer(self):
         data = []
 
@@ -41,51 +42,49 @@ class Model(object):
 
             for i in range(len(face)):
                 vert = []
-                
-                position = self.vertices[face[i][0] - 1]
-                for value in position:
-                    vert.append(value)
-                
-                vts = self.texCoords[face[i][1] - 1]
-                for value in vts:
-                    vert.append(value)
-                
-                normals = self.normals[face[i][2] - 1]
-                for value in normals:
-                    vert.append(value)
-                
-                faceVerts.append(vert)
-            
-            for value in faceVerts[0]: data.append(value)
-            for value in faceVerts[1]: data.append(value)
-            for value in faceVerts[2]: data.append(value)
 
-            if len(faceVerts) == 4:    
-                for value in faceVerts[0]: data.append(value)
-                for value in faceVerts[2]: data.append(value)
-                for value in faceVerts[3]: data.append(value)
-            
+                position = self.vertices[face[i][0] - 1]
+                vert.extend(position)
+
+                vts = self.texCoords[face[i][1] - 1]
+                vert.extend(vts)
+
+                normals = self.normals[face[i][2] - 1]
+                vert.extend(normals)
+
+                faceVerts.append(vert)
+
+            # Triangulación
+            for i in range(1, len(faceVerts) - 1):
+                data.extend(faceVerts[0])
+                data.extend(faceVerts[i])
+                data.extend(faceVerts[i + 1])
+
         return data
-    
+
     def AddTexture(self, textureFilename):
-        self.textureSurface = image.load(textureFilename)
+        self.textureSurface = image.load(textureFilename).convert()
         self.textureData = image.tostring(self.textureSurface, "RGB", True)
         self.texture = glGenTextures(1)
-    
+
     def Render(self):
-
         if self.texture is not None:
-
             glActiveTexture(GL_TEXTURE0)
             glBindTexture(GL_TEXTURE_2D, self.texture)
-            glTexImage2D(GL_TEXTURE_2D,
-                        0,
-                        GL_RGB,
-                        self.textureSurface.get_width(),
-                        self.textureSurface.get_height(),
-                        0,
-                        GL_RGB,
-                        GL_UNSIGNED_BYTE,
-                        self.textureData)
+            glTexImage2D(
+                GL_TEXTURE_2D,
+                0,
+                GL_RGB,
+                self.textureSurface.get_width(),
+                self.textureSurface.get_height(),
+                0,
+                GL_RGB,
+                GL_UNSIGNED_BYTE,
+                self.textureData
+            )
+            glGenerateMipmap(GL_TEXTURE_2D)
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
 
         self.buffer.Render()

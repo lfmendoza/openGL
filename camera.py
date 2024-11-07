@@ -3,16 +3,16 @@ from math import sin, cos, radians
 
 class Camera(object):
     def __init__(self, width, height):
-        self.position = glm.vec3(0,0,0)
-        self.rotation = glm.vec3(0,0,0)
+        self.position = glm.vec3(0, 0, 0)
+        self.rotation = glm.vec3(0, 0, 0)
 
         self.screenWidth = width
         self.screenHeight = height
-        
-        self.CreateProjectionMatrix(60, 0.1, 1000)
         self.usingLookAt = False
+
+        self.CreateProjectionMatrix(60, 0.1, 1000)
         self.viewMatrix = glm.mat4(1)
-    
+
     def GetViewMatrix(self):
         if not self.usingLookAt:
             identity = glm.mat4(1)
@@ -28,19 +28,23 @@ class Camera(object):
             camMat = translateMat * rotationMat
 
             self.viewMatrix = glm.inverse(camMat)
-
         return self.viewMatrix
-    
+
     def GetProjectionMatrix(self):
         return self.projectionMatrix
 
     def CreateProjectionMatrix(self, fov, nearPlane, farPlane):
-        self.projectionMatrix = glm.perspective(glm.radians(fov), self.screenWidth/self.screenHeight, nearPlane, farPlane)
+        self.projectionMatrix = glm.perspective(
+            glm.radians(fov),
+            self.screenWidth / self.screenHeight,
+            nearPlane,
+            farPlane
+        )
 
     def LookAt(self, center):
         self.usingLookAt = True
-        self.viewMatrix = glm.lookAt(self.position, center, glm.vec3(0,1,0))
-
+        self.viewMatrix = glm.lookAt(self.position, center, glm.vec3(0, 1, 0))
+    
     def Orbit(self, center, distance, angle):
         self.position.x = center.x + sin(radians(angle)) * distance
         self.position.z = center.z + cos(radians(angle)) * distance
