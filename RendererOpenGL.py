@@ -1,4 +1,3 @@
-# RendererOpenGL.py
 import pygame
 from pygame.locals import *
 import warnings
@@ -18,9 +17,21 @@ clock = pygame.time.Clock()
 
 rend = Renderer(screen)
 
+skyboxTexture = ["textures/skybox/right.jpg", 
+                 "textures/skybox/left.jpg", 
+                 "textures/skybox/top.jpg", 
+                 "textures/skybox/bottom.jpg", 
+                 "textures/skybox/front.jpg", 
+                 "textures/skybox/back.jpg"]
+
+rend.createSkybox(skyboxTexture, skybox_vertex_shader, skybox_fragment_shader)
+
 faceModel = Model("models/model.obj")
 faceModel.AddTexture("textures/model.bmp")
 faceModel.translation.z = -5
+faceModel.scale.x = 2
+faceModel.scale.y = 2
+faceModel.scale.z = 2
 
 rend.scene.append(faceModel)
 
@@ -29,6 +40,9 @@ fragment_shaders = [fragment_shader_default, fragment_shader_grayscale, fragment
 
 current_vertex_shader = vertex_shaders[0]
 current_fragment_shader = fragment_shaders[0]
+
+camDistance = 5
+camAngle = 0
 
 rend.SetShaders(current_vertex_shader, current_fragment_shader)
 
@@ -86,6 +100,24 @@ while isRunning:
     if keys[K_PAGEDOWN]:
         rend.pointLight.y -= 5 * deltaTime
 
+    if keys[K_q]:
+        camDistance += 45 * deltaTime
+
+    if keys[K_e]:
+        camDistance -= 45 * deltaTime
+
+
+    mouseButtons = pygame.mouse.get_pressed()
+    if mouseButtons[0]:
+        camAngle += pygame.mouse.get_rel()[0] * deltaTime * 5
+
+
+    if keys[K_r]:
+        camDistance += 2 * deltaTime
+
+    if keys[K_t]:
+        camDistance -= 2 * deltaTime
+
     if keys[K_a]:
         rend.camera.position.x -= 5 * deltaTime
 
@@ -98,9 +130,12 @@ while isRunning:
     if keys[K_s]:
         rend.camera.position.z += 5 * deltaTime
 
-    rend.time += deltaTime
+
+    rend.camera.LookAt(faceModel.translation)
+    rend.camera.Orbit(faceModel.translation, camDistance, camAngle)
 
     rend.Render()
+    rend.time += deltaTime
     pygame.display.flip()
 
 pygame.quit()
