@@ -29,18 +29,39 @@ skyboxTexture = [
 
 rend.createSkybox(skyboxTexture)
 
-# Cargar un modelo OBJ diferente
 cat = Model("models/cat.obj")
 cat.AddTexture("textures/cat.bmp")
 cat.translation.z = 0
+cat.translation.x = 0
+cat.rotation.y = 180
 
 
 woman = Model("models/girl.obj")
-# woman.AddTexture("textures/girl.bmp")
-woman.translation.z = -5
+woman.translation.z = 2
+woman.translation.x = 0
+woman.rotation.y = 180
+
+spider = Model("models/spider.obj")
+spider.translation.z = -5
+spider.translation.x = -3
+spider.rotation.y = 180
+spider.scale.x = 0.03
+spider.scale.y = 0.03
+spider.scale.z = 0.03
+
+alien = Model("models/alien.obj")
+alien.translation.z = -5
+alien.translation.x = 3
+alien.rotation.y = -45
+alien.scale.x = 0.15
+alien.scale.y = 0.15
+alien.scale.z = 0.15
 
 rend.scene.append(cat)
 rend.scene.append(woman)
+rend.scene.append(spider)
+rend.scene.append(alien)
+rend.scene.append(perro)
 
 
 vShader = vertex_shader_default

@@ -45,9 +45,26 @@ class Model(object):
             faceNormals   = []
 
             for i in range(len(face)):
-                facePositions.append( self.objFile.vertices[face[i][0] - 1] )
-                faceTexCoords.append( self.objFile.texCoords[face[i][1] - 1] )
-                faceNormals.append( self.objFile.normals[face[i][2] - 1] )		
+                # Validate and append vertex positions
+                if self.objFile.vertices and face[i][0] > 0:
+                    facePositions.append(self.objFile.vertices[face[i][0] - 1])
+                else:
+                    print(f"Warning: Missing or invalid vertex data at face index {i}.")
+                    facePositions.append([0.0, 0.0, 0.0])  # Default value for missing vertices
+
+                # Validate and append texture coordinates
+                if self.objFile.texCoords and face[i][1] > 0:
+                    faceTexCoords.append(self.objFile.texCoords[face[i][1] - 1])
+                else:
+                    print(f"Warning: Missing or invalid texture coordinate at face index {i}.")
+                    faceTexCoords.append([0.0, 0.0])  # Default value for missing texture coordinates
+
+                # Validate and append normals
+                if self.objFile.normals and face[i][2] > 0:
+                    faceNormals.append(self.objFile.normals[face[i][2] - 1])
+                else:
+                    print(f"Warning: Missing or invalid normal data at face index {i}.")
+                    faceNormals.append([0.0, 0.0, 0.0])  # Default value for missing normals	
                 
 
             # tangent

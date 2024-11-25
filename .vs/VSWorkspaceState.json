@@ -2,7 +2,8 @@
   "ExpandedNodes": [
     "",
     "\\models",
-    "\\textures"
+    "\\textures",
+    "\\textures\\girl"
   ],
   "SelectedNode": "\\RendererOpenGL.py",
   "PreviewInSolutionExplorer": false
