@@ -1,5 +1,5 @@
 {
   "TestFramework": "Pytest",
-  "Interpreter": "Global|PythonCore|3.13-32-32",
-  "SuppressConfigureTestFrameworkPrompt": "true"
+  "SuppressConfigureTestFrameworkPrompt": "true",
+  "Interpreter": "Workspace|Workspace|myenv"
 }

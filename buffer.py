@@ -1,33 +1,30 @@
-from array import array
+from numpy import array, float32
 from OpenGL.GL import *
 
 class Buffer(object):
     def __init__(self, data):
-        self.vertexBuffer = array('f', data)
-        self.VBO = glGenBuffers(1)
-        self.VAO = glGenVertexArrays(1)
+        self.data = array(data, float32)
 
-    def Render(self):
-        glBindVertexArray(self.VAO)
-        glBindBuffer(GL_ARRAY_BUFFER, self.VBO)
+        # Vertex Buffer
+        self.bufferObject = glGenBuffers(1)
+        glBindBuffer(GL_ARRAY_BUFFER, self.bufferObject)
+        glBufferData(GL_ARRAY_BUFFER,
+                     self.data.nbytes,
+                     self.data,
+                     GL_STATIC_DRAW)
+    
+    def Use(self, attribNumber, size):
+		
+		# Atar los buffer objects a la tarjeta de video
+        glBindBuffer(GL_ARRAY_BUFFER, self.bufferObject)
+		
+		# Atributo
+        glEnableVertexAttribArray(attribNumber)
+		
+        glVertexAttribPointer(attribNumber,			# Attribute number
+            size,					# Size
+			GL_FLOAT,				# Type
+			GL_FALSE,				# Is it normalized?
+			0,					# Stride size in bytes
+			ctypes.c_void_p(0))	# Offset
 
-        glBufferData(
-            GL_ARRAY_BUFFER,
-            self.vertexBuffer.buffer_info()[1] * self.vertexBuffer.itemsize,
-            self.vertexBuffer.tobytes(),
-            GL_STATIC_DRAW
-        )
-
-        # Atributo de posiciones
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * 4, ctypes.c_void_p(0))
-        glEnableVertexAttribArray(0)
-
-        # Atributo de coordenadas de textura
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * 4, ctypes.c_void_p(3 * 4))
-        glEnableVertexAttribArray(1)
-
-        # Atributo de normales
-        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * 4, ctypes.c_void_p(5 * 4))
-        glEnableVertexAttribArray(2)
-
-        glDrawArrays(GL_TRIANGLES, 0, len(self.vertexBuffer) // 8)

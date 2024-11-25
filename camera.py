@@ -13,7 +13,7 @@ class Camera(object):
         self.CreateProjectionMatrix(60, 0.1, 1000)
         self.viewMatrix = glm.mat4(1)
 
-    def GetViewMatrix(self):
+    def Update(self):
         if not self.usingLookAt:
             identity = glm.mat4(1)
 
@@ -28,10 +28,8 @@ class Camera(object):
             camMat = translateMat * rotationMat
 
             self.viewMatrix = glm.inverse(camMat)
-        return self.viewMatrix
 
-    def GetProjectionMatrix(self):
-        return self.projectionMatrix
+        self.usingLookAt = False
 
     def CreateProjectionMatrix(self, fov, nearPlane, farPlane):
         self.projectionMatrix = glm.perspective(
