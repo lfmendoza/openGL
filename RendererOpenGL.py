@@ -12,6 +12,10 @@ width = 1440
 height = 1024
 
 pygame.init()
+pygame.mixer.init()
+pygame.mixer.music.load("music/video_game_theme.mp3")
+pygame.mixer.music.set_volume(0.5)
+pygame.mixer.music.play(-1)
 
 screen = pygame.display.set_mode((width, height), pygame.OPENGL | pygame.DOUBLEBUF)
 clock = pygame.time.Clock()
@@ -61,8 +65,6 @@ rend.scene.append(cat)
 rend.scene.append(woman)
 rend.scene.append(spider)
 rend.scene.append(alien)
-rend.scene.append(perro)
-
 
 vShader = vertex_shader_default
 fShader = fragment_shader_default
@@ -80,6 +82,25 @@ modelIndex = 0
 
 rend.SetShaders(vShader, fShader)
 
+# Map shaders to keys
+vertex_shaders = {
+    K_1: vertex_shader_default,
+    K_2: vertex_shader_wave,
+    K_3: vertex_shader_twist,
+    K_4: vertex_shader_explosion,
+    K_5: vertex_shader_fire,
+    K_6: vertex_shader_hologram,
+}
+
+fragment_shaders = {
+    K_F1: fragment_shader_default,
+    K_F2: fragment_shader_grayscale,
+    K_F3: fragment_shader_inversion,
+    K_F4: fragment_shader_pixelation,
+    K_F5: fragment_shader_fire,
+    K_F6: fragment_shader_chromatic_aberration,
+}
+
 isRunning = True
 while isRunning:
 
@@ -92,14 +113,6 @@ while isRunning:
         if event.type == pygame.QUIT:
             isRunning = False
 
-        elif event.type == pygame.MOUSEWHEEL:
-
-            if event.y < 0 and cam_distance < 10:
-                cam_distance -= event.y * deltaTime * 10
-
-            if event.y > 0 and cam_distance > 2:
-                cam_distance -= event.y * deltaTime * 10
-				
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if pygame.mouse.get_pressed()[2]:
                 modelIndex += 1
@@ -111,30 +124,14 @@ while isRunning:
             if event.key == pygame.K_ESCAPE:
                 isRunning = False
 
-            # Vertex Shaders
-            elif event.key == pygame.K_1:
-                vShader = vertex_shader_default
+            # Change vertex shaders
+            if event.key in vertex_shaders:
+                vShader = vertex_shaders[event.key]
                 rend.SetShaders(vShader, fShader)
 
-            elif event.key == pygame.K_2:
-                vShader = vertex_shader_wave
-                rend.SetShaders(vShader, fShader)
-
-            elif event.key == pygame.K_3:
-                vShader = vertex_shader_twist
-                rend.SetShaders(vShader, fShader)
-
-            # Fragment Shaders
-            elif event.key == pygame.K_4:
-                fShader = fragment_shader_default
-                rend.SetShaders(vShader, fShader)
-
-            elif event.key == pygame.K_5:
-                fShader = fragment_shader_grayscale
-                rend.SetShaders(vShader, fShader)
-
-            elif event.key == pygame.K_6:
-                fShader = fragment_shader_inversion
+            # Change fragment shaders
+            elif event.key in fragment_shaders:
+                fShader = fragment_shaders[event.key]
                 rend.SetShaders(vShader, fShader)
 
             elif event.key == pygame.K_7:
@@ -143,7 +140,7 @@ while isRunning:
             elif event.key == pygame.K_8:
                 rend.WireframeMode()
 
-    # Movimiento de la luz
+    # Movement of the light source
     if keys[K_LEFT]:
         rend.pointLight.x -= 1 * deltaTime
 
@@ -156,7 +153,7 @@ while isRunning:
     if keys[K_DOWN]:
         rend.pointLight.z += 1 * deltaTime
 
-    # Movimiento de camara hacia arriba y abajo con limite
+    # Camera movement with limits
     if keys[K_a]:
         cam_angle -= 50 * deltaTime
 
@@ -171,7 +168,7 @@ while isRunning:
         cam_height -= 5 * deltaTime
         cam_height = max(cam_height, min_cam_height)
 
-    # Zoom In y Zoom Out con limite
+    # Zoom In and Zoom Out with limits
     if keys[K_q]:
         cam_distance -= 5 * deltaTime
         cam_distance = max(cam_distance, min_cam_distance)
@@ -182,15 +179,15 @@ while isRunning:
 
     if pygame.mouse.get_pressed()[0]:
         cam_angle -= mouseVel[0] * deltaTime * 5
-		
+
         if mouseVel[1] > 0 and rend.camera.position.y < 2:
             rend.camera.position.y += mouseVel[1] * deltaTime
-			
+
         if mouseVel[1] < 0 and rend.camera.position.y > -2:
             rend.camera.position.y += mouseVel[1] * deltaTime
-				
-    rend.camera.Orbit( cat.translation, cam_distance, cam_angle)
-    rend.camera.LookAt( cat.translation )
+
+    rend.camera.Orbit(rend.scene[modelIndex].translation, cam_distance, cam_angle)
+    rend.camera.LookAt(rend.scene[modelIndex].translation)
 
     rend.Render()
 

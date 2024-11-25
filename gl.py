@@ -29,6 +29,23 @@ class Renderer(object):
 
         self.skybox = None
 
+    def compile_shader(source, shader_type):
+        try:
+            return compileShader(source, shader_type)
+        except RuntimeError as e:
+            print(f"Shader compilation failed ({shader_type}):\n{e}")
+            raise
+
+    def compile_shader_program(vertex_shader_source, fragment_shader_source):
+        try:
+            vertex = compile_shader(vertex_shader_source, GL_VERTEX_SHADER)
+            fragment = compile_shader(fragment_shader_source, GL_FRAGMENT_SHADER)
+            program = compileProgram(vertex, fragment)
+            return program
+        except RuntimeError as e:
+            print(f"Shader program linking failed:\n{e}")
+            raise
+
 
     def createSkybox(self, textureList):
         self.skybox = Skybox(textureList)
